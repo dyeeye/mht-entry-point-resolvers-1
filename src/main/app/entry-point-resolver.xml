@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8091" basePath="/resolvers" doc:name="HTTP Listener Configuration"/>
+    <flow name="callable-entry-point-resolverFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/callable" doc:name="HTTP"/>
+        <component doc:name="Java" class="pl.profitonline.components.SimpleComponent">
+        	
+        </component>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="property-entry-point-resolverFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/property" doc:name="HTTP"/>
+        <set-variable variableName="MethodName" value="perform#[message.inboundProperties.'http.query.params'.name]Call" doc:name="Variable"/>
+        <component class="pl.profitonline.components.MultiMethodsComponent" doc:name="Java">
+        	<entry-point-resolver-set>
+        		<property-entry-point-resolver property="MethodName"/>
+        	</entry-point-resolver-set>
+        </component>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="method-entry-point-resolverFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/method" doc:name="HTTP"/>
+        <component doc:name="Java" class="pl.profitonline.components.StringComponent">
+        	<method-entry-point-resolver>
+        		<include-entry-point method="makeSubstring"/>
+        	</method-entry-point-resolver>
+        </component>
+    </flow>
+    <flow name="reflection-entry-point-resolverFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/reflection" doc:name="HTTP"/>
+        <component doc:name="Java" class="pl.profitonline.components.ReflectionComponent">
+        	
+        </component>
+        <component doc:name="Java" class="pl.profitonline.components.ReflectionComponent">
+        	
+        </component>
+         <component doc:name="Java" class="pl.profitonline.components.ReflectionComponent">
+        	<reflection-entry-point-resolver></reflection-entry-point-resolver>
+        </component>
+    </flow>
+</mule>
